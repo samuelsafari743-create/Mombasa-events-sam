@@ -9,21 +9,17 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API - Get events
 app.get('/api/events', (req,res)=>{
-  db.all("SELECT * FROM events ORDER BY date DESC", [], (err, rows)=>{
-    if(err) return res.status(500).json({error: err.message});
+  db.all("SELECT * FROM events", [], (err, rows)=>{
     res.json(rows);
   });
 });
 
-// API - Add event
 app.post('/api/events', (req,res)=>{
   const {title, location, date, price, total_slots, category} = req.body;
-  db.run("INSERT INTO events (title,location,date,price,total_slots,sold,remaining,category,revenue) VALUES (?,?,?,?,?,?,?, ?, 0)",
-    [title, location, date, price, total_slots, 0, total_slots, category],
+  db.run("INSERT INTO events (title,location,date,price,total_slots,sold,remaining,category,revenue) VALUES (?,?,?,?,?,?,?,?,?)",
+    [title, location, date, price, total_slots, 0, total_slots, category, 0],
     function(err){
-      if(err) return res.status(500).json({error: err.message});
       res.json({ok:1, id: this.lastID});
     });
 });
@@ -36,10 +32,4 @@ app.get('/', (req,res)=>{
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Muhimu kwa Vercel
 module.exports = app;
-
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, ()=> console.log("Running on "+PORT));
-}
